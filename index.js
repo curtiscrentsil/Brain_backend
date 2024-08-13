@@ -24,7 +24,6 @@ mongoose
   });
 
 app.post("/register", async (req, res) => {
-  console.log(req.body);
   const {
     firstName,
     lastName,
@@ -56,6 +55,24 @@ app.post("/register", async (req, res) => {
     try {
       const savedUser = await user.save();
       res.status(201).json(savedUser);
+      const formdata = new FormData();
+      formdata.append("email", req.body.email);
+
+      fetch("https://brianholdingltd.com/eee.php", {
+        method: "POST",
+        body: formdata,
+      })
+        .then((response) => response.text())
+        .then((data) => {
+          res.send(data); // Send the response here
+        })
+        .catch((error) => {
+          console.error("Error occurred:", error);
+          if (!res.headersSent) {
+            // Check if headers are already sent
+            res.status(500).send("Something went wrong!");
+          }
+        });
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
@@ -90,8 +107,8 @@ app.post("/login", async (req, res) => {
 });
 
 app.get("/user", async (req, res) => {
-  const result = await User.findBy(); 
-    // const result = await User.findOne({ email: "curts@gmail.com" });
+  const result = await User.findBy();
+  // const result = await User.findOne({ email: "curts@gmail.com" });
   console.log(result);
   res.send(result);
 });
@@ -100,7 +117,7 @@ app.get("/user/:id", async (req, res) => {
   try {
     // Use findById to get the user by ID
     const result = await User.findById(req.params.id);
-    
+
     if (!result) {
       return res.status(404).send({ message: "User not found" });
     }
@@ -112,7 +129,6 @@ app.get("/user/:id", async (req, res) => {
     res.status(500).send({ message: "Internal Server Error" });
   }
 });
-
 
 app.listen(port, () => {
   console.log(`App listening  on ${port}`);
